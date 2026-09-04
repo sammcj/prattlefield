@@ -37,6 +37,7 @@ export class Hud {
   private readonly crosshair = el('div', 'crosshair', '<span class="t"></span><span class="b"></span><span class="l"></span><span class="r"></span>')
   private readonly hitmarker = el('div', 'hitmarker', '<span></span><span></span><span></span><span></span>')
   private readonly scope = el('div', 'scope hidden', '<span class="h"></span><span class="v"></span>')
+  private readonly pause = el('div', 'pause hidden', '<b>MOUSE RELEASED</b><span>Match paused. Click anywhere to grab it back and carry on.</span>')
   private readonly vignette = el('div', 'vignette')
   private readonly flash = el('div', 'flash')
   private readonly dmgRing = el('div', 'dmg-ring')
@@ -104,7 +105,7 @@ export class Hud {
     this.toast.append(this.toastBig, this.toastSmall, this.toastBarWrap)
     tc.append(tickets, flags, this.toast)
     this.root.appendChild(tc)
-    this.root.append(this.killfeed, this.scorePop, this.subtitles, this.prompt, this.scoreboard)
+    this.root.append(this.killfeed, this.scorePop, this.subtitles, this.prompt, this.scoreboard, this.pause)
   }
 
   setVisible(v: boolean): void {
@@ -123,6 +124,10 @@ export class Hud {
     this.subtitles.appendChild(row)
     while (this.subtitles.children.length > 3) this.subtitles.firstChild?.remove()
     setTimeout(() => row.remove(), 4500)
+  }
+
+  setPaused(on: boolean): void {
+    this.pause.classList.toggle('hidden', !on)
   }
 
   showToast(big: string, small: string, key: string, seconds = 2.5): void {

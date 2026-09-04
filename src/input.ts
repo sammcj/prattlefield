@@ -11,6 +11,8 @@ export class Input {
   mouseDY = 0
   wheel = 0
   locked = false
+  /** True when the browser rejected pointer lock; the game then runs unlocked instead of pausing. */
+  lockUnavailable = false
   private readonly target: HTMLElement
 
   constructor(target: HTMLElement) {
@@ -42,11 +44,17 @@ export class Input {
     })
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === target
+      if (this.locked) this.lockUnavailable = false
       if (!this.locked) {
         this.down.clear()
         this.buttons.clear()
       }
     })
+    // Browsers that refuse the lock (embedded frames, permissions) still get a playable game without the pause.
+    document.addEventListener('pointerlockerror', () => {
+      this.lockUnavailable = true
+    })
+    if (!('requestPointerLock' in target)) this.lockUnavailable = true
     target.addEventListener('contextmenu', (e) => e.preventDefault())
   }
 

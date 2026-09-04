@@ -78,6 +78,7 @@ export class Game {
   private readonly vehicles: Vehicle[] = []
   private state: GameState = 'menu'
   private stateTimer = 0
+  private pausedSince = 0
   private lastTime = performance.now()
   private time = 0
   private firstDeploy = true
@@ -159,8 +160,9 @@ export class Game {
     this.tower.onCollapse = () => this.onTowerCollapse()
 
     window.addEventListener('resize', () => this.onResize())
-    this.renderer.domElement.addEventListener('click', () => {
-      if (this.state === 'playing') this.input.requestLock()
+    // Any click while playing grabs the mouse back, wherever it lands (HUD, toast, canvas).
+    document.addEventListener('mousedown', () => {
+      if (this.state === 'playing' && !this.input.locked) this.input.requestLock()
     })
   }
 
@@ -376,7 +378,7 @@ export class Game {
         tickets: this.match.tickets,
         combatants: this.combatants,
         vehicles: this.vehicles,
-        prompt: !this.input.locked ? { key: 'Click', text: 'to capture the mouse and resume. Esc releases it.' } : near ? { key: 'E', text: `Get in ${near.displayName}` } : null,
+        prompt: near ? { key: 'E', text: `Get in ${near.displayName}` } : null,
         showScoreboard: this.input.isDown('Tab'),
       })
     }
@@ -413,8 +415,20 @@ export class Game {
     const now = performance.now()
     const dt = Math.min(0.05, (now - this.lastTime) / 1000)
     this.lastTime = now
-    this.stateTimer += dt
-    this.update(dt)
+    // Losing the mouse mid-fight (Esc, focus change) freezes the match rather than leaving the player a sitting duck.
+    const paused = this.paused
+    // The overlay waits a beat (wall clock) so the frame or two before a fresh lock lands does not flash it.
+    if (!paused) this.pausedSince = 0
+    else if (this.pausedSince === 0) this.pausedSince = now
+    this.hud.setPaused(paused && now - this.pausedSince > 250)
+    if (!paused) {
+      this.stateTimer += dt
+      this.update(dt)
+    }
     this.renderer.render(this.scene, this.camera)
+  }
+
+  get paused(): boolean {
+    return this.state === 'playing' && !this.input.locked && !this.input.lockUnavailable
   }
 }

@@ -24,7 +24,7 @@ The game captures the mouse while you play. Esc releases it and pauses your inpu
 - Mouse look, left click fire, right click aim down sights
 - R reload, 1 / 2 / wheel swap weapon, G throw your grenade
 - Q say something unhelpful, E get in or out of the Ute, H horn
-- Tab scoreboard, Esc release the mouse
+- Tab scoreboard, Esc release the mouse (the match pauses until you click back in)
 
 ## Gunplay
 
